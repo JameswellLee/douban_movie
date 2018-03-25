@@ -22,3 +22,16 @@ movie = {
     'link': '',
     'posters': ''
 }
+actor = {
+    'douban_id': '',
+    'name': '',
+    'sex': '',
+    'constellation': '',
+    'birthday': '',
+    'profession': '',
+    'nickname': '',
+    'family_members': '',
+    'imdb_number': '',
+    'introduction': '',
+    'popular_movies': ''
+}
