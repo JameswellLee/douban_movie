@@ -18,11 +18,15 @@ USER_AGENT = [
 AGENT_SIZE = 7
 
 # 延时设置
-DELAY_MIN_SECOND = 4
-DELAY_MAX_SECOND = 24
+DELAY_MIN_SECOND = 1
+DELAY_MAX_SECOND = 2
 
 # 豆瓣电影的url前缀
 URL_PREFIX = 'https://movie.douban.com/subject/'
+URL_MOVIE_TYPE = 'https://movie.douban.com/j/new_search_subjects'
+ALL_FORMS = ['电影', '电视剧', '综艺', '动画', '纪录片', '短片']
+ALL_TYPES = ['剧情', '爱情', '喜剧', '科幻', '动作', '悬疑', '犯罪', '恐怖', '青春', '励志', '战争', '文艺', '黑色幽默', '传记', '情色', '暴力', '音乐', '家庭']
+ALL_AREAS = ['大陆', '美国', '香港', '台湾', '日本', '韩国', '英国', '法国', '德国','意大利', '西班牙', '印度', '泰国', '俄罗斯', '伊朗', '加拿大', '澳大利亚', '爱尔兰', '瑞典', '巴西', '丹麦']
 
 """
 这里用到了阿布云代理动态版。使用影梭或者其他代理，甚至不用代理也可以
