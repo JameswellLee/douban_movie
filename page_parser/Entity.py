@@ -20,7 +20,8 @@ movie = {
     'description': '',
     'tags': '',
     'link': '',
-    'posters': ''
+    'posters': '',
+    'recommendations': ''
 }
 actor = {
     'douban_id': '',

@@ -148,6 +148,13 @@ class MovieParser:
                 i += 1
         except:
             pass
+    def __get_similar_movies(self):
+        try:
+            info = self.__soup.find('div', {'class': 'recommendations-bd'})
+
+        except:
+            pass
+
 
     @staticmethod
     def __compose_list(list_):
