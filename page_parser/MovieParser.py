@@ -15,7 +15,7 @@ class MovieParser:
     """
     __soup = ''
     __movie = None
-    __NOT_FOUND = '页面不存在'
+    __NOT_FOUND = u'页面不存在'
     __html_doc = ''
 
     def __set_bs_soup(self):
@@ -130,9 +130,7 @@ class MovieParser:
         try:
             info = self.__soup.find('div', id='info')
             info = info.contents
-
             for i in range(0, len(info)):
-
                 if len(str(info[i])) < 10:
                     continue
                 if str(info[i]).find('语言') != -1:
@@ -146,12 +144,16 @@ class MovieParser:
                     self.__movie['scriptwriters'] = \
                         item[item.find('/">')+3:item.find('</a')]
                 i += 1
-        except:
+        except :
             pass
-    def __get_similar_movies(self):
-        try:
-            info = self.__soup.find('div', {'class': 'recommendations-bd'})
 
+    def __get_recommendations(self):
+        try:
+            movie_names = []
+            info = self.__soup.find_all('dd')
+            for dd in info:
+                movie_names.append(dd.find('a').text)
+            self.__movie['recommendations'] = ','.join(movie_names)
         except:
             pass
 
@@ -195,9 +197,6 @@ class MovieParser:
 
         if self.__is_404_page():
             return None
-
-        #print(self.__html_doc)
-
         self.__set_bs_soup()
 
         self.__movie = Entity.movie.copy()
@@ -212,6 +211,6 @@ class MovieParser:
         self.__get_description()
         self.__get_others()
         self.__get_scriptwriters()
-
+        self.__get_recommendations()
         return self.__movie
 

@@ -50,7 +50,10 @@ for i in range(START_ID, END_ID):
     # 提取豆瓣数据
     movie_parser.set_html_doc(r.text)
     movie = movie_parser.extract_movie_info()
-
+    if not movie:
+        continue
+    print(movie)
+    exit(1)
     # 如果获取的数据为空，延时以减轻对目标服务器的压力,并跳过。
     if not movie:
         Utils.Utils.delay(constants.DELAY_MIN_SECOND, constants.DELAY_MAX_SECOND)

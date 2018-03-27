@@ -8,6 +8,7 @@ import configparser
 import constants
 import time
 import os
+import multiprocessing as mp
 from login import CookiesHelper
 from page_parser import MovieParser
 from page_parser import CommentParser
@@ -18,11 +19,10 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 
+def run_func(args):
+    crawl_by_lines(args[0], args[1], args[2], args[3])
 
-fail_url_file = open(config['common']['fail_url_file'], 'w+')
-
-
-def crawl_by_lines(lines, start_line):
+def crawl_by_lines(queue, lines, start_line, area):
     movie_parser = MovieParser.MovieParser()
     comment_parser = CommentParser.CommentParser()
     db_helper = DbHelper.DbHelper()
@@ -64,9 +64,7 @@ def crawl_by_lines(lines, start_line):
             movie = None
         # 如果获取的数据为空，延时以减轻对目标服务器的压力,并跳过。
         if not movie:
-            # 将没有获取到的电影url重新写入文件中
-            fail_url_file.write(str(movie_data) + '\n')
-            fail_url_file.flush()
+            queue.put(str(movie_data))
 
         if movie:
             movie['link'] = movie_url
@@ -74,7 +72,7 @@ def crawl_by_lines(lines, start_line):
             movie['comments'] = comments
             db_helper.insert_movie(movie)
         cost_time = time.time() - start_time
-        print('crawl status : line=%d, url=%s, state=%s, time=%s' % (i, movie_data['url'], not not movie, cost_time))
+        print('crawl status : area=%s, line=%d, url=%s, state=%s, time=%s' % (area, i, movie_data['url'], not not movie, cost_time))
         # 释放资源
     movie_parser = None
     db_helper.close_db()
@@ -82,13 +80,28 @@ def crawl_by_lines(lines, start_line):
 
 if __name__ == '__main__':
     # 通过电影地区获取到的url进行电影爬取
-    area_start_idx = 0
-    start_line = 1573
-    for i in range(area_start_idx, len(constants.ALL_AREAS)):
+    m = mp.Manager()
+    fail_url_queue = m.Queue()
+    pool = mp.Pool(8)
+    fail_url_file = config['common']['fail_url_file']
+    fail_url_file = open(fail_url_file, 'w')
+    args = []
+    for i in range(len(constants.ALL_AREAS)):
         url_file_name = os.path.join(config['common']['url_dir'], constants.ALL_AREAS[i] + '.txt')
-        with open(url_file_name, 'r') as url_file:
-            lines = url_file.readlines()
-            crawl_by_lines(lines, start_line)
+        url_file = open(url_file_name, 'r')
+        lines = url_file.readlines()
+        print(len(lines))
+        args.append((fail_url_queue, lines, 0, constants.ALL_AREAS[i]))
+
+    pool.map(run_func, args)
+    pool.close()
+    pool.join()
+
+    while not fail_url_queue.empty:
+        fail_url_file.write(fail_url_queue.get() + '\n')
+    fail_url_file.close()
+
+
 
 
 

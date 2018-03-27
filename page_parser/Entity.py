@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # coding=utf-8
 # author=XingLong Pan
 # date=2016-12-05
@@ -21,7 +20,14 @@ movie = {
     'tags': '',
     'link': '',
     'posters': '',
-    'recommendations': ''
+    'recommendations': '',
+    'comments': ''
+}
+comment = {
+    'douban_id': 0,
+    'votes': 0,
+    'rating': '',
+    'description': ''
 }
 actor = {
     'douban_id': '',

@@ -20,6 +20,8 @@ create table movie (
 `score` text,
 `description` text,
 `tags` text,
+`recommendations` text,
+`comments` text,
 primary key(`douban_id`)
 ) charset=utf8;
 
