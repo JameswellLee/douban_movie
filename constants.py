@@ -24,6 +24,7 @@ DELAY_MAX_SECOND = 2
 # 豆瓣电影的url前缀
 URL_PREFIX = 'https://movie.douban.com/subject/'
 URL_MOVIE_TYPE = 'https://movie.douban.com/j/new_search_subjects'
+URL_MOVIE_TYPE_OLD = 'https://movie.douban.com/j/search_subjects'
 URL_COMMENTS_FORMAT = 'https://movie.douban.com/subject/%s/comments?status=P'
 ALL_FORMS = [u'电影', u'电视剧', u'综艺', u'动画', u'纪录片', u'短片']
 ALL_TYPES = [u'剧情', u'爱情', u'喜剧', u'科幻', u'动作', u'悬疑', u'犯罪', u'恐怖', u'青春', u'励志', u'战争', u'文艺', u'黑色幽默', u'传记', u'情色', u'暴力', u'音乐', u'家庭']
