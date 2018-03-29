@@ -128,35 +128,41 @@ class MovieParser:
             pass
 
     def __get_others(self):
-        info = self.__soup.find('div', id='info')
-        info = info.contents
+        try:
+            info = self.__soup.find('div', id='info')
+            info = info.contents
 
-        for i in range(0, len(info)):
-            #print(str(info[i]))
-            if str(info[i]).find('语言') != -1:
-                self.__movie['languages'] = info[i+1].replace(' / ', ',').strip()
-            if str(info[i]).find('制片国家') != -1:
-                self.__movie['release_region'] = info[i + 1].replace(' / ', ',').strip()
-            if str(info[i]).find('又名') != -1:
-                self.__movie['alias'] = info[i + 1].replace(' / ', ',').strip()
-            if str(info[i]).find('编剧') != -1:
-                item = str(info[i])
-                self.__movie['scriptwriters'] = \
-                    item[item.find('/">')+3:item.find('</a')]
-            i += 1
+            for i in range(0, len(info)):
+                #print(str(info[i]))
+                if str(info[i]).find('语言') != -1:
+                    self.__movie['languages'] = info[i+1].replace(' / ', ',').strip()
+                if str(info[i]).find('制片国家') != -1:
+                    self.__movie['release_region'] = info[i + 1].replace(' / ', ',').strip()
+                if str(info[i]).find('又名') != -1:
+                    self.__movie['alias'] = info[i + 1].replace(' / ', ',').strip()
+                if str(info[i]).find('编剧') != -1:
+                    item = str(info[i])
+                    self.__movie['scriptwriters'] = \
+                        item[item.find('/">')+3:item.find('</a')]
+                i += 1
+        except:
+            pass
 
     def __get_want_to_watch(self):
-        info = self.__soup.find('div', {'class': 'subject-others-interests-ft'})
-        if not info:
-            self.__movie['want_to_watch'] = 0
-        else:
-            info = info.find_all('a')
-            if len(info) < 2:
+        try:
+            info = self.__soup.find('div', {'class': 'subject-others-interests-ft'})
+            if not info:
                 self.__movie['want_to_watch'] = 0
             else:
-                text = info[1].text.split('人')[0]
-                #print('want_to_watch=%d\n' % int(text))
-                self.__movie['want_to_watch'] = int(text)
+                info = info.find_all('a')
+                if len(info) < 2:
+                    self.__movie['want_to_watch'] = 0
+                else:
+                    text = info[1].text.split('人')[0]
+                    #print('want_to_watch=%d\n' % int(text))
+                    self.__movie['want_to_watch'] = int(text)
+        except:
+            pass
 
     def __get_recommendations(self):
         try:

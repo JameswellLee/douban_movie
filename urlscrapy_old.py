@@ -53,8 +53,7 @@ def crawl_movie_up_playing(up_playing_url):
     fliter_movie_url(ret_urls, [info['href'] for info in infos])
     return ret_urls
 
-
-def crawl_movie_url_by_tag(tag, limit=10000):
+def crawl_movie_url_by_tag_old(tag, limit=10000):
     payload = {'sort': 'rank',
                'type': 'movie',
                'page_limit': '20',
@@ -91,27 +90,48 @@ def crawl_movie_url_by_tag(tag, limit=10000):
         Utils.Utils.delay(constants.DELAY_MIN_SECOND, constants.DELAY_MAX_SECOND)
 
 
+def crawl_movie_url_by_tag_new(tag, limit=10000):
+    payload = {'sort': 'T',
+               'range': '0,10',
+               'tags': '电影',
+               'start': 0}
+    payload['tag'] = tag
+    start = 0
+    count = 0
+    movie_urls = []
+    while True:
+        payload['start'] = start
+        headers = {'User-Agent': random.choice(constants.USER_AGENT)}
+        r = requests.get(
+          constants.URL_MOVIE_TYPE,
+          headers=headers,
+          params=payload
+        )
+        start = start + 20
+        r.encoding = 'utf-8'
+        data_dic = json.loads(r.text)
+        movie_list = data_dic['data']
+        for movie in movie_list:
+            movie_urls.append(movie['url'])
+        count = count + len(movie_list)
+        print('tag=%s, count=%d' % (tag, count))
+        if len(movie_list) == 0 or count >= limit:
+            return movie_urls
+        #Utils.Utils.delay(constants.DELAY_MIN_SECOND, constants.DELAY_MAX_SECOND)
+
+
 if __name__ == '__main__':
     city_list = [u'beijing', u'shanghai', u'guangzhou', u'shenzhen', u'chengdu', u'wuhan', u'hangzhou', u'chongqing', u'zhengzhou', u'nanjing', u'xian', u'suzhou', u'tianjin', u'changsha', u'fuzhou', u'jinan', u'shenyang', u'hefei', u'qingdao', u'haerbin', u'wenzhou', u'xiamen', u'dalian', u'dongguan', u'changchun']
     up_playing_url = "https://movie.douban.com/coming"
     now_playing_url = "https://movie.douban.com/cinema/nowplaying/"
-    tags = ["热门", "经典", "豆瓣高分"]
-    all_tags = ["热门", "最新", "经典", "可播放", "豆瓣高分", "冷门佳片", "华语", "欧美", "韩国", "日本", "动作", "喜剧", "爱情", "科幻", "悬疑", "恐怖", "治愈"]
-    # #爬去正在热播的电影url
-    # now_playing_url_sets = crawl_movie_now_playing([now_playing_url + city for city in city_list])
-    # #爬去即将上映的电影url
-    # up_playing_url_set = crawl_movie_up_playing(up_playing_url)
-    # playing_url_set = up_playing_url_set | up_playing_url_set
-    # up_and_now_play_file = open('up_now_playing.txt', 'w')
-    # for url in playing_url_set:
-    #     up_and_now_play_file.write(url + '\n')
-    #     up_and_now_play_file.flush()
-    for tag in tags:
-        movie_urls = crawl_movie_url_by_tag(tag)
-        movie_file = open('%s.txt' % tag, 'w')
-        for url in movie_urls:
-            movie_file.write(url + '\n')
-            movie_file.flush()
+    #tags = ["热门", "经典", "豆瓣高分"]
+    tag = ','.join(['电影'])
+    movie_urls = crawl_movie_url_by_tag_new(tag)
+    movie_file = open('%s.txt' % tag, 'w')
+    for url in movie_urls:
+        movie_file.write(url + '\n')
+        movie_file.flush()
+
 
 
 
