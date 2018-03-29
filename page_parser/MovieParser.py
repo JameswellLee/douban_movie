@@ -5,7 +5,8 @@
 
 from bs4 import BeautifulSoup
 from page_parser import Entity
-
+import requests
+import random
 
 class MovieParser:
     """
@@ -127,25 +128,35 @@ class MovieParser:
             pass
 
     def __get_others(self):
-        try:
-            info = self.__soup.find('div', id='info')
-            info = info.contents
-            for i in range(0, len(info)):
-                if len(str(info[i])) < 10:
-                    continue
-                if str(info[i]).find('语言') != -1:
-                    self.__movie['languages'] = info[i+1].replace(' / ', ',').strip()
-                if str(info[i]).find('制片国家') != -1:
-                    self.__movie['release_region'] = info[i + 1].replace(' / ', ',').strip()
-                if str(info[i]).find('又名') != -1:
-                    self.__movie['alias'] = info[i + 1].replace(' / ', ',').strip()
-                if str(info[i]).find('编剧') != -1:
-                    item = str(info[i])
-                    self.__movie['scriptwriters'] = \
-                        item[item.find('/">')+3:item.find('</a')]
-                i += 1
-        except :
-            pass
+        info = self.__soup.find('div', id='info')
+        info = info.contents
+
+        for i in range(0, len(info)):
+            #print(str(info[i]))
+            if str(info[i]).find('语言') != -1:
+                self.__movie['languages'] = info[i+1].replace(' / ', ',').strip()
+            if str(info[i]).find('制片国家') != -1:
+                self.__movie['release_region'] = info[i + 1].replace(' / ', ',').strip()
+            if str(info[i]).find('又名') != -1:
+                self.__movie['alias'] = info[i + 1].replace(' / ', ',').strip()
+            if str(info[i]).find('编剧') != -1:
+                item = str(info[i])
+                self.__movie['scriptwriters'] = \
+                    item[item.find('/">')+3:item.find('</a')]
+            i += 1
+
+    def __get_want_to_watch(self):
+        info = self.__soup.find('div', {'class': 'subject-others-interests-ft'})
+        if not info:
+            self.__movie['want_to_watch'] = 0
+        else:
+            info = info.find_all('a')
+            if len(info) < 2:
+                self.__movie['want_to_watch'] = 0
+            else:
+                text = info[1].text.split('人')[0]
+                #print('want_to_watch=%d\n' % int(text))
+                self.__movie['want_to_watch'] = int(text)
 
     def __get_recommendations(self):
         try:
@@ -186,7 +197,7 @@ class MovieParser:
 
         self.__html_doc = html_doc
 
-    def extract_movie_info(self):
+    def extract_page_entity(self):
         """
         如果为404或其他出错页面，返回None。
         :return: None|dict
@@ -212,5 +223,9 @@ class MovieParser:
         self.__get_others()
         self.__get_scriptwriters()
         self.__get_recommendations()
+        self.__get_want_to_watch()
         return self.__movie
+
+
+
 
