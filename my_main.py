@@ -5,10 +5,9 @@
 import random
 import requests
 import configparser
+import json
 import constants
-import time
-import os
-from login import CookiesHelper
+import sys
 from page_parser import MovieParser
 from page_parser import CommentParser
 from storage import DbHelper
@@ -18,77 +17,80 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 
+def crawl_page_by_url(url, parser):
+    headers = {'User-Agent': random.choice(constants.USER_AGENT)}
+    # 获取豆瓣页面(API)数据
+    r = requests.get(
+        url,
+        headers=headers,
+        # cookies=cookies
+    )
+    r.encoding = 'utf-8'
+    # 提取豆瓣数据
+    parser.set_html_doc(r.text)
+    entity = parser.extract_page_entity()
+    return entity
 
-fail_url_file = open(config['common']['fail_url_file'], 'w+')
 
+def crawl_movie_and_save(movie_url, db_helper):
 
-def crawl_by_lines(lines, start_line):
     movie_parser = MovieParser.MovieParser()
     comment_parser = CommentParser.CommentParser()
-    db_helper = DbHelper.DbHelper()
-    for i in range(start_line, len(lines)):
-        line = lines[i]
-        if len(line) < 5:
-            continue
-        start_time = time.time()
-        movie_data = eval(line)
-        movie_url = movie_data['url']
-        movie_id = movie_data['id']
-        comment_url = constants.URL_COMMENTS_FORMAT % movie_id
+    movie = crawl_page_by_url(movie_url, movie_parser)
+    #download fail
+    if not movie:
+        return False
+    #fliter movie which is not hot
+    if movie['want_to_watch'] < constants.WHAT_TO_WATCH_LIMIT:
+        return False
+    douban_id = movie_url.split('/')[-2]
+    comment_url = constants.URL_COMMENTS_FORMAT % douban_id
+    comments = crawl_page_by_url(comment_url, comment_parser)
+    # 如果没获取到电影评论数据要重新爬取
+    if not comments or not movie:
+        return False
 
-        headers = {'User-Agent': random.choice(constants.USER_AGENT)}
-        # 获取豆瓣页面(API)数据
-        r = requests.get(
-            movie_url,
-            headers=headers,
-            # cookies=cookies
-        )
-        r.encoding = 'utf-8'
+    if movie:
+        movie['link'] = movie_url
+        movie['douban_id'] = str(douban_id)
+        movie['comments'] = json.dumps(comments)
+        db_helper.insert_movie(movie)
+        return True
 
-        # 提取豆瓣数据
-        movie_parser.set_html_doc(r.text)
-        movie = movie_parser.extract_movie_info()
 
-        # 获取电影评论页面数据
-        r = requests.get(
-            comment_url,
-            headers=headers,
-            # cookies=cookies
-        )
-        r.encoding = 'utf-8'
-        comment_parser.set_html_doc(r.text)
-        comments = comment_parser.extract_comments_str(movie_id)
-
-        # 如果没获取到电影评论数据要重新爬取
-        if not comments:
-            movie = None
-        # 如果获取的数据为空，延时以减轻对目标服务器的压力,并跳过。
-        if not movie:
-            # 将没有获取到的电影url重新写入文件中
-            fail_url_file.write(str(movie_data) + '\n')
-            fail_url_file.flush()
-
-        if movie:
-            movie['link'] = movie_url
-            movie['douban_id'] = str(movie_id)
-            movie['comments'] = comments
-            db_helper.insert_movie(movie)
-        cost_time = time.time() - start_time
-        print('crawl status : line=%d, url=%s, state=%s, time=%s' % (i, movie_data['url'], not not movie, cost_time))
-        # 释放资源
-    movie_parser = None
-    db_helper.close_db()
+def load_urls(url_file):
+    url_set = []
+    url_file = open(url_file, 'r')
+    for line in url_file:
+        if 'http' in line:
+            url = line.strip()
+            url_set.append(url)
+    return url_set
 
 
 if __name__ == '__main__':
-    # 通过电影地区获取到的url进行电影爬取
-    area_start_idx = 0
-    start_line = 1573
-    for i in range(area_start_idx, len(constants.ALL_AREAS)):
-        url_file_name = os.path.join(config['common']['url_dir'], constants.ALL_AREAS[i] + '.txt')
-        with open(url_file_name, 'r') as url_file:
-            lines = url_file.readlines()
-            crawl_by_lines(lines, start_line)
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
-
+    hot_movie_url_file = 'hot_movie.txt'
+    up_now_playing_url_file = 'up_now_playing.txt'
+    up_now_playing_urls = load_urls(up_now_playing_url_file)
+    hot_movie_urls = load_urls(hot_movie_url_file)
+    db_helper = DbHelper.DbHelper()
+    datasets_url_set = set(up_now_playing_urls)
+    # for url in up_now_playing_urls:
+    #     state = crawl_movie_and_save(url, db_helper)
+    #     print('crawl now and up playing movies: url=%s, state=%s' % (url, str(state)))
+    count = 0
+    print(len(hot_movie_urls))
+    for url in hot_movie_urls:
+        if count >= 2000:
+            break
+        if url in datasets_url_set:
+            continue
+        if crawl_movie_and_save(url, db_helper):
+            count += 1
+            datasets_url_set.add(url)
+            print('crawl hot movies: url=%s, count=%d' % (url, count))
+    print('done!!!')
 

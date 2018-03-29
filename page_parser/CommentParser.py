@@ -34,13 +34,16 @@ class CommentParser:
 
         self.__html_doc = html_doc
 
-    def get_comments(self, douban_id):
+    def get_comments(self):
         comments = []
         infos = self.__soup.find_all('div', {'class': 'comment'})
         for info in infos:
             comment = Entity.comment.copy()
-            comment['douban_id'] = douban_id
-            comment['votes'] = int(info.find('span', {'class': 'votes'}).text)
+            vote_node = info.find('span', {'class': 'votes'})
+            if vote_node:
+                comment['votes'] = int(vote_node.text)
+            else:
+                comment['votes'] = 0
             comment['description'] = info.find('p').text
             comment_info = info.find('span', {'class', 'comment-info'}).contents
             for c_info in comment_info:
@@ -51,7 +54,7 @@ class CommentParser:
             comments.append(comment)
         return comments
 
-    def extract_comments_str(self, douban_id):
+    def extract_page_str(self):
         """
         :return:所有评论连接起来的字符串
         """
@@ -62,12 +65,12 @@ class CommentParser:
             return None
         rating_list = []
         self.__set_bs_soup()
-        comments = self.get_comments(douban_id)
+        comments = self.get_comments()
         for comment in comments:
             rating_list.append(comment['description'])
         return 'amp&;'.join(rating_list)
 
-    def extract_comments_info(self):
+    def extract_page_entity(self):
         """
         如果为404或其他出错页面，返回None。
         :return: None|dict
@@ -78,5 +81,5 @@ class CommentParser:
         if self.__is_404_page():
             return None
         self.__set_bs_soup()
-        return self.__get_comments()
+        return self.get_comments()
 

@@ -22,7 +22,6 @@ cookie_helper = CookiesHelper.CookiesHelper(
 #cookies = cookie_helper.get_cookies()
 #print(cookies)
 
-
 payload = {'sort': 'T', 'range': '0,10', 'tags': '大陆', 'start': None}
 movies_count_dict = {}
 for area in constants.ALL_AREAS:

@@ -21,10 +21,10 @@ movie = {
     'link': '',
     'posters': '',
     'recommendations': '',
-    'comments': ''
+    'comments': '',
+    'want_to_watch': 0
 }
 comment = {
-    'douban_id': 0,
     'votes': 0,
     'rating': '',
     'description': ''
