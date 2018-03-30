@@ -22,6 +22,7 @@ config.read('config.ini')
 def run_func(args):
     crawl_by_lines(args[0], args[1], args[2], args[3])
 
+
 def crawl_by_lines(queue, lines, start_line, area):
     movie_parser = MovieParser.MovieParser()
     comment_parser = CommentParser.CommentParser()

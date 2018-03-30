@@ -57,5 +57,15 @@ class DbHelper:
         finally:
             pass
 
+    def is_contains_movie(self, douban_id):
+        with self.__connection.cursor() as cursor:
+            sql = "SELECT `douban_id` from movie where `douban_id`=%s"
+            cursor.execute(sql, (douban_id, ))
+            result = cursor.fetchone()
+            if not result:
+                return False
+            else:
+                return True
+
     def close_db(self):
         self.__connection.close()
