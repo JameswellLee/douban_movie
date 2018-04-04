@@ -36,22 +36,25 @@ class CommentParser:
 
     def get_comments(self):
         comments = []
-        infos = self.__soup.find_all('div', {'class': 'comment'})
-        for info in infos:
-            comment = Entity.comment.copy()
-            vote_node = info.find('span', {'class': 'votes'})
-            if vote_node:
-                comment['votes'] = int(vote_node.text)
-            else:
-                comment['votes'] = 0
-            comment['description'] = info.find('p').text
-            comment_info = info.find('span', {'class', 'comment-info'}).contents
-            for c_info in comment_info:
-                if len(str(c_info)) < 10:
-                    continue
-                if str(c_info).find('allstar') != -1:
-                    comment['rating'] = constants.COMMENT_RATING_DICT[c_info.attrs['title']]
-            comments.append(comment)
+        try:
+            infos = self.__soup.find_all('div', {'class': 'comment'})
+            for info in infos:
+                comment = Entity.comment.copy()
+                vote_node = info.find('span', {'class': 'votes'})
+                if vote_node:
+                    comment['votes'] = int(vote_node.text)
+                else:
+                    comment['votes'] = 0
+                comment['description'] = info.find('p').text
+                comment_info = info.find('span', {'class', 'comment-info'}).contents
+                for c_info in comment_info:
+                    if len(str(c_info)) < 10:
+                        continue
+                    if str(c_info).find('allstar') != -1:
+                        comment['rating'] = constants.COMMENT_RATING_DICT[c_info.attrs['title']]
+                comments.append(comment)
+        except:
+            pass
         return comments
 
     def extract_page_str(self):

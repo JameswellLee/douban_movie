@@ -22,7 +22,9 @@ movie = {
     'posters': '',
     'recommendations': '',
     'comments': '',
-    'want_to_watch': 0
+    'want_to_watch': 0,
+    'title_short': '',
+    'box_office': '',
 }
 comment = {
     'votes': 0,
