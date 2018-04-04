@@ -72,26 +72,6 @@ class DbHelper:
         self.__connection.commit()
         self.close_db
 
-
-    # 'douban_id': 0,
-    # 'title': '',
-    # 'directors': '',
-    # 'scriptwriters': '',
-    # 'actors': '',
-    # 'types': '',
-    # 'release_region': '',
-    # 'release_date': '',
-    # 'alias': '',
-    # 'languages': '',
-    # 'duration': 0,
-    # 'score': 0.0,
-    # 'description': '',
-    # 'tags': '',
-    # 'link': '',
-    # 'posters': '',
-    # 'recommendations': '',
-    # 'comments': '',
-    # 'want_to_watch': 0
     def data_clean(self):
         self.update_title()
 
@@ -114,10 +94,10 @@ class DbHelper:
                 cursor.execute(sql, (title_short, douban_id))
         self.__connection.commit()
 
-    def get_id_title_dicts(self):
+    def select_all_dicts(self):
         row_dict_list = None
         with self.__connection.cursor() as cursor:
-            sql = "select douban_id, title_short from movie where 1=1;"
+            sql = "select * from movie where 1=1;"
             cursor.execute(sql)
             row_dict_list = cursor.fetchall()
         self.__connection.commit()
@@ -127,6 +107,39 @@ class DbHelper:
         with self.__connection.cursor() as cursor:
             sql = "update movie set `box_office`=%s where `douban_id`=%s"
             cursor.execute(sql, (box_office, douban_id))
+        self.__connection.commit()
+
+    def update_description_by_id(self, douban_id, description):
+        with self.__connection.cursor() as cursor:
+            sql = "update movie set `description`=%s where `douban_id`=%s"
+            cursor.execute(sql, (description, douban_id))
+        self.__connection.commit()
+
+    def update_comments_by_id(self, douban_id, comments):
+        with self.__connection.cursor() as cursor:
+            sql = "update movie set `comments`=%s where `douban_id`=%s"
+            cursor.execute(sql, (comments, douban_id))
+        self.__connection.commit()
+
+    def update_comment_final_by_id(self, douban_id, comment_final):
+        with self.__connection.cursor() as cursor:
+            sql = "update movie set `comment_final`=%s where `douban_id`=%s"
+            cursor.execute(sql, (comment_final, douban_id))
+        self.__connection.commit()
+
+    def select_by_id(self, douban_id):
+        row_dict = None
+        with self.__connection.cursor() as cursor:
+            sql = "select * from movie where `douban_id`=%s"
+            cursor.execute(sql, douban_id)
+            row_dict = cursor.fetchone()
+        self.__connection.commit()
+        return row_dict
+
+    def delete_by_id(self, douban_id):
+        with self.__connection.cursor() as cursor:
+            sql = "delete from movie where `douban_id`=%s"
+            cursor.execute(sql, douban_id)
         self.__connection.commit()
 
 
